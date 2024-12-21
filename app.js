@@ -7,6 +7,11 @@ console.log(process.env.JWT_SECRET); // Specifically check if JWT_SECRET is load
 const express = require('express');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth');
+const artistRoutes = require('./routes/artistes');
+const adminRoutes = require('./routes/admin'); // Nouvelle route admin
+const chansonRoutes = require('./routes/chansons'); // Vérifie que le chemin est correct
+const albumRoutes = require('./routes/albums');
+
 const cors = require('cors');
 
 const app = express();
@@ -23,6 +28,10 @@ app.use(express.json()); // For parsing application/json
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/artistes', artistRoutes);
+app.use('/api/admin', adminRoutes); // Ajouter cette ligne
+app.use('/api/chansons', chansonRoutes);
+app.use('/api/albums', albumRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
