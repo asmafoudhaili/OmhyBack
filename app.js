@@ -15,6 +15,10 @@ const albumRoutes = require('./routes/albums');
 const cors = require('cors');
 
 const app = express();
+const path = require('path');  // Import the 'path' module
+
+// Serve static files from the 'uploads' folder
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 console.log(process.env.JWT_SECRET);  // This should print the JWT_SECRET value
 

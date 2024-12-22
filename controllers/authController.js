@@ -42,36 +42,47 @@ const registerAdmin = async (req, res) => {
 };
 
 // Admin Login Controller
+// Admin Login Controller
 const loginAdmin = async (req, res) => {
-  console.log('Request received at /loginAdmin'); // Confirm request reaches endpoint
+  console.log('Request received at /loginAdmin');
   const { email, password } = req.body;
-  console.log('Request body:', req.body); // Log the structure of req.body
+  console.log('Request body:', req.body);
 
   try {
     // Find admin by email
     const admin = await Admin.findOne({ email });
     if (!admin) {
-      console.log(`Admin with email ${email} not found`); // Log invalid email
+      console.log(`Admin with email ${email} not found`);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     // Check password
     const isPasswordValid = await bcrypt.compare(password, admin.password);
     if (!isPasswordValid) {
-      console.log(`Invalid password for email ${email}`); // Log invalid password
+      console.log(`Invalid password for email ${email}`);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     // Generate JWT
     const token = jwt.sign({ id: admin._id }, JWT_SECRET, { expiresIn: '1h' });
-    console.log(`JWT generated for admin with ID ${admin._id}`); // Log successful JWT generation
+    console.log(`JWT generated for admin with ID ${admin._id}`);
 
-    res.json({ token, admin: { email: admin.email, id: admin._id } });
+    // Set JWT token in HttpOnly cookie
+    res.cookie('token', token, {
+      httpOnly: true,  // This makes the cookie inaccessible to JavaScript
+      secure: process.env.NODE_ENV === 'production',  // Set to true in production for secure cookies
+      maxAge: 3600000,  // Cookie expires in 1 hour
+    });
+
+    res.json({
+      admin: { email: admin.email, id: admin._id },
+    });
   } catch (error) {
-    console.error('Login error:', error); // Log server error
+    console.error('Login error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 
 module.exports = { registerAdmin, loginAdmin };

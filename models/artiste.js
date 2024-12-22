@@ -37,6 +37,10 @@ const artisteSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Album', // Relation : un artiste peut avoir plusieurs albums
       }],
+      photo: [{ // New field to store image URL or file path
+        type: String,
+        default: '', // Default is an empty string, but you can change this based on your requirements
+      }]
     }, {
         timestamps: true,
         toJSON: { virtuals: false }, // Prevents `id` from being added
