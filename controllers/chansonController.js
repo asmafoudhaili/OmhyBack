@@ -1,18 +1,48 @@
 const Artiste = require('../models/artiste');
 const Album = require('../models/album');
+const multer = require('multer');
+
 const Chanson = require('../models/chanson');
+
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, '../uploads/'); // Directory to store uploaded images
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Store the file with a unique name
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    const filetypes = /jpeg|jpg|png|gif/; // Allowed file types
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+
+    if (extname && mimetype) {
+      return cb(null, true);
+    }
+    cb(new Error('Only image files are allowed'), false);
+  }
+});
 
 // Créer une chanson et lier à un artiste et un album
 exports.createChanson = async (req, res) => {
     const { nom, type, anneeDeCreation, artisteId, albumId } = req.body;
-  
+    let photo = '';
+    if (req.file) {
+      photo = req.file.path.replace("\\", "/").replace('uploads\\', '/uploads/'); // Adjusting the path for the frontend
+    }
     try {
       // Verify if the artiste exists
-      const artiste = await Artiste.findById(artisteId);
+      
+      artiste = await Artiste.findById(artisteId);
       if (!artiste) {
         return res.status(404).json({ message: 'Artiste non trouvé' });
-      }
-  
+      
+    }
       let album;
       if (albumId) {
         // Verify if the album exists if provided
@@ -29,6 +59,7 @@ exports.createChanson = async (req, res) => {
         anneeDeCreation, 
         artiste: artisteId, 
         album: albumId || null, 
+        photo
       });
       await chanson.save();
   
@@ -62,7 +93,9 @@ exports.getChansonWithArtiste = async (req, res) => {
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
+    
   };
+  
   
 // Récupérer une chanson avec l'artiste et l'album associés
 exports.getChansonWithRelations = async (req, res) => {

@@ -11,6 +11,7 @@ const artistRoutes = require('./routes/artistes');
 const adminRoutes = require('./routes/admin'); // Nouvelle route admin
 const chansonRoutes = require('./routes/chansons'); // Vérifie que le chemin est correct
 const albumRoutes = require('./routes/albums');
+const adminNewsRoutes = require('./routes/news');
 
 const cors = require('cors');
 
@@ -36,6 +37,7 @@ app.use('/api/artistes', artistRoutes);
 app.use('/api/admin', adminRoutes); // Ajouter cette ligne
 app.use('/api/chansons', chansonRoutes);
 app.use('/api/albums', albumRoutes);
+app.use('/api/news', adminNewsRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })

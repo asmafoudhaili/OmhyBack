@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+
 const chansonSchema = new mongoose.Schema({
   nom: {
     type: String,
@@ -12,18 +13,24 @@ const chansonSchema = new mongoose.Schema({
     trim: true,
   },
   anneeDeCreation: {
-    type: Number,
+    type: Date,
     required: true,
   },
   artiste: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Artiste',
-    required: true, // Artiste is required
+    required: true,
+
+     // Artiste is required
   },
   album: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Album', // Album is optional
   },
+  photo: [{ // New field to store image URL or file path
+        type: String,
+        default: '', // Default is an empty string, but you can change this based on your requirements
+      }]
 }, {
     timestamps: true,
     toJSON: { virtuals: false }, // Prevents `id` from being added
