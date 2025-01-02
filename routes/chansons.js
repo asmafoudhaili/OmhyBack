@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const chansonController = require('../controllers/chansonController');
-
+const multer = require('multer');
+const upload = require('../utils/multer');
 // Route : Créer une chanson
-router.post('/', chansonController.createChanson);
+router.post('/', upload.single('photo'), chansonController.createChanson);
 
 // Route : Récupérer toutes les chansons
 router.get('/', chansonController.getAllChansons);
@@ -15,7 +16,7 @@ router.get('/:id', chansonController.getChansonById);
 router.get('/:id/with-artiste', chansonController.getChansonWithArtiste);
 
 // Route : Mettre à jour une chanson
-router.put('/:id', chansonController.updateChanson);
+router.put('/:id', upload.single('photo'), chansonController.updateChanson);
 
 // Route : Supprimer une chanson
 router.delete('/:id', chansonController.deleteChanson);

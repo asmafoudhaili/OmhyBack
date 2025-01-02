@@ -24,6 +24,10 @@ const chansonSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Album', // Album is optional
   },
+  photo: { // New field to store the photo URL or path
+    type: String,
+    default: '', // Default to an empty string if no photo is uploaded
+  },
 }, {
     timestamps: true,
     toJSON: { virtuals: false }, // Prevents `id` from being added

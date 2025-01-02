@@ -1,52 +1,56 @@
 const Artiste = require('../models/artiste');
 const Album = require('../models/album');
 const Chanson = require('../models/chanson');
+const multer = require('multer');
+const path = require('path');
 
 // Créer une chanson et lier à un artiste et un album
 exports.createChanson = async (req, res) => {
-    const { nom, type, anneeDeCreation, artisteId, albumId } = req.body;
-  
-    try {
-      // Verify if the artiste exists
-      const artiste = await Artiste.findById(artisteId);
-      if (!artiste) {
-        return res.status(404).json({ message: 'Artiste non trouvé' });
-      }
-  
-      let album;
-      if (albumId) {
-        // Verify if the album exists if provided
-        album = await Album.findById(albumId);
-        if (!album) {
-          return res.status(404).json({ message: 'Album non trouvé' });
-        }
-      }
-  
-      // Create the chanson
-      const chanson = new Chanson({ 
-        nom, 
-        type, 
-        anneeDeCreation, 
-        artiste: artisteId, 
-        album: albumId || null, 
-      });
-      await chanson.save();
-  
-      // Add the chanson to the artiste
-      artiste.chansons.push(chanson._id);
-      await artiste.save();
-  
-      // Add the chanson to the album if provided
-      if (album) {
-        album.chansons.push(chanson._id);
-        await album.save();
-      }
-  
-      res.status(201).json({ chanson, artiste, album });
-    } catch (err) {
-      res.status(400).json({ message: err.message });
+  const { nom, type, anneeDeCreation, artisteId, albumId } = req.body;
+  let photo = '';
+
+  if (req.file) {
+    photo = req.file.path.replace("\\", "/").replace('uploads\\', '/uploads/'); // Adjusting the path for the frontend
+  }
+
+  try {
+    const artiste = await Artiste.findById(artisteId);
+    if (!artiste) {
+      return res.status(404).json({ message: 'Artiste non trouvé' });
     }
-  };
+
+    let album;
+    if (albumId) {
+      album = await Album.findById(albumId);
+      if (!album) {
+        return res.status(404).json({ message: 'Album non trouvé' });
+      }
+    }
+
+    const chanson = new Chanson({ 
+      nom, 
+      type, 
+      anneeDeCreation, 
+      artiste: artisteId, 
+      album: albumId || null, 
+      photo,
+    });
+
+    await chanson.save();
+
+    artiste.chansons.push(chanson._id);
+    await artiste.save();
+
+    if (album) {
+      album.chansons.push(chanson._id);
+      await album.save();
+    }
+
+    res.status(201).json({ chanson, artiste, album });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
   
 // Récupérer une chanson avec l'artiste associé
 exports.getChansonWithArtiste = async (req, res) => {
@@ -108,23 +112,38 @@ exports.getChansonById = async (req, res) => {
 };
 
 // Mettre à jour une chanson
+
 exports.updateChanson = async (req, res) => {
   const { nom, type, anneeDeCreation } = req.body;
+  let photo = '';
+
+  // Handle photo update if a file is provided
+  if (req.file) {
+    photo = req.file.path.replace("\\", "/").replace('uploads\\', '/uploads/');
+  }
 
   try {
+    const updateFields = { nom, type, anneeDeCreation };
+    if (photo) {
+      updateFields.photo = photo; // Only include photo if a new file is uploaded
+    }
+
     const chanson = await Chanson.findByIdAndUpdate(
       req.params.id,
-      { nom, type, anneeDeCreation },
-      { new: true, runValidators: true } // Retourne la nouvelle version + validation
+      updateFields,
+      { new: true, runValidators: true } // Return updated document and validate fields
     );
+
     if (!chanson) {
       return res.status(404).json({ message: 'Chanson non trouvée' });
     }
+
     res.status(200).json(chanson);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 };
+
 
 // Supprimer une chanson
 exports.deleteChanson = async (req, res) => {
